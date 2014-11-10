@@ -1,0 +1,31 @@
+{
+  "name": "socket.io-roundtrip",
+  "version": "1.0.0",
+  "description": "Wrap a socket.io call to provide similar roundtrip behavior as an http request",
+  "main": "server.js",
+  "browser": "client.js",
+  "scripts": {
+    "test": "jest",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tgriesser/socket.io-roundtrip"
+  },
+  "keywords": [
+    "socket.io",
+    "roundtrip"
+  ],
+  "author": {
+    "name": "Tim Griesser",
+    "web": "https://github.com/tgriesser"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tgriesser/socket.io-roundtrip/issues"
+  },
+  "homepage": "https://github.com/tgriesser/socket.io-roundtrip",
+  "dependencies": {
+    "node-uuid": "^1.4.1"
+  }
+}
