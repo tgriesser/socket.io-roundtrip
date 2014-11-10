@@ -31,7 +31,7 @@ roundtripServer('some-event', function(data, cb) {
 var io = require('socket.io')(endpoint);
 var roundtripClient = require('socket.io-roundtrip')(io);
 
-roundtrip('some-event', {name: 'test'}, function(err, resp) {
+roundtripClient('some-event', {name: 'test'}, function(err, resp) {
   if (err) // handle error
 
   // handle response data
