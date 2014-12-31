@@ -54,4 +54,18 @@ describe('roundtrip', function () {
     });
   });
 
+  it('should not crash on throw errors', function () {
+    
+    function serverFn(data, cb) {
+      throw new Error('failed');
+    }
+
+    roundtripServer('testing', serverFn);
+    roundtripClient('testing', {name: 'Test User'}, function(err, resp) {
+      expect(err.message).toBe('failed');
+      expect(err.json).toBeUndefined();
+    });
+
+  });
+
 });
