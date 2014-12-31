@@ -1,5 +1,7 @@
 module.exports = function(socket) {
+  
   "use strict";
+  
   var events = Object.create(null);
 
   socket.on('__roundtrip:server__', function(data) {
@@ -7,32 +9,37 @@ module.exports = function(socket) {
     var wrappedEvent = data.wrappedEvent;
     var payload      = data.payload;
     var toFire       = events[wrappedEvent];
+    function handler(err, resp) {
+      if (err) {
+        var errorPayload = {};
+        if (err instanceof Error) {
+          errorPayload.message = err.message;
+          if (sendFullError) {
+            errorPayload.stack = err.stack;
+            errorPayload.json  = err.toJSON ? JSON.stringify(err) : null;
+          }
+        } else {
+          errorPayload.message = err;
+        }
+        socket.emit('__roundtrip:error__', {
+          uuid: uuid,
+          payload: errorPayload
+        });
+      } else {
+        socket.emit('__roundtrip__', {
+          uuid: uuid,
+          payload: resp
+        });
+      }
+    }
     if (toFire) {
       var firingFn      = toFire[0];
       var sendFullError = toFire[1];
-      firingFn(payload, function(err, resp) {
-        if (err) {
-          var errorPayload = {};
-          if (err instanceof Error) {
-            errorPayload.message = err.message;
-            if (sendFullError) {
-              errorPayload.stack = err.stack;
-              errorPayload.json  = err.toJSON ? JSON.stringify(err) : null;
-            }
-          } else {
-            errorPayload.message = err;
-          }
-          socket.emit('__roundtrip:error__', {
-            uuid: uuid,
-            payload: errorPayload
-          });
-        } else {
-          socket.emit('__roundtrip__', {
-            uuid: uuid,
-            payload: resp
-          });
-        }
-      });
+      try {
+        firingFn(payload, handler);
+      } catch (e) {
+        handler(e);
+      }
     }
   });
 
