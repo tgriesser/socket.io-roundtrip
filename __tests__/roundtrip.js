@@ -1,4 +1,5 @@
 jest.autoMockOff();
+var when   = require('when');
 var events = require('events');
 var client = require('../client');
 var server = require('../server');
@@ -8,7 +9,7 @@ describe('roundtrip', function () {
 
   beforeEach(function() {
     eventBus = new events.EventEmitter();
-    roundtripClient = client(eventBus);
+    roundtripClient = client(eventBus, when.promise);
     roundtripServer = server(eventBus);
   });
   
