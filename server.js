@@ -1,10 +1,11 @@
-module.exports = function(socket, errorHandler) {
+module.exports = function(socket, globalErrorHandler) {
   
   "use strict";
 
   var isProd = process.env.NODE_ENV === 'production';
   
-  var events  = Object.create(null);
+  var events   = Object.create(null);
+  var handlers = Object.create(null);
   var Promise = require('bluebird');
 
   socket.on('__roundtrip:server__', function(data) {
@@ -14,7 +15,8 @@ module.exports = function(socket, errorHandler) {
     var payload      = data.payload;
     
     function getErrorPayload(err) {
-      
+      var errorHandler = handlers[wrappedEvent] || globalErrorHandler;
+
       // If there's an errorHandler defined, we can use that to 
       // determine what the returned value should be.
       if (errorHandler) {
@@ -58,7 +60,7 @@ module.exports = function(socket, errorHandler) {
 
   });
 
-  return function(evt, fn) {
+  return function(evt, fn, eventErrorHandler) {
     if (events[evt]) {
       throw new Error('Only one rountrip event may be registered');
     }
@@ -66,6 +68,7 @@ module.exports = function(socket, errorHandler) {
       throw new Error('The second arugment to roundtrip should be a handler function');
     }
     events[evt] = fn;
+    if (eventErrorHandler) handlers[evt] = eventErrorHandler;
   };
 
 };

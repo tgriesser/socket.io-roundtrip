@@ -1,6 +1,6 @@
 {
   "name": "socket.io-roundtrip",
-  "version": "2.0.0",
+  "version": "2.0.0-pre",
   "description": "Wrap a socket.io call to provide similar roundtrip behavior as an http request",
   "main": "server.js",
   "browser": "client.js",
@@ -27,9 +27,12 @@
   "homepage": "https://github.com/tgriesser/socket.io-roundtrip",
   "dependencies": {
     "bluebird": "^2.6.2",
+    "create-error": "^0.3.1",
+    "jest": "git://github.com/facebook/jest.git#9e2606655ebcddff0ccf015fc904bbac63823ce6",
     "node-uuid": "^1.4.1"
   },
   "devDependencies": {
+    "jest-cli": "^0.2.1",
     "when": "^3.6.4"
   }
 }

@@ -13,59 +13,82 @@ describe('roundtrip', function () {
     roundtripServer = server(eventBus);
   });
   
-  it('should handle a roundtrip with the data', function(done) {
-    roundtripServer('testing', function(data, cb) {
+  pit('should handle a roundtrip with the data', function() {
+    roundtripServer('testing', function(data) {
       expect(data.name).toBe('Test User');
-      cb(null, {name: 'Tim'});
+      return {name: 'Tim'};
     });
-    roundtripClient('testing', {name: 'Test User'}, function(err, resp) {
-      expect(err).toBeNull();
+    return roundtripClient('testing', {name: 'Test User'}).then(function(resp) {
       expect(resp.name).toBe('Tim');
     });
   });
 
-  it('should send an error with the message property', function(done) {
-    roundtripServer('testing', function(data, cb) {
-      cb(new Error('failed'));
+  pit('should send an error with the message property', function() {
+    roundtripServer('testing', function(data) {
+      throw new Error('failed');
     });
-    roundtripClient('testing', {name: 'Test User'}, function(err, resp) {
+    return roundtripClient('testing', {name: 'Test User'}).catch(function(err) {
       expect(err.message).toBe('failed');
     });
   });
 
-  it('should send stack & json from the server, with a truthy third argument to roundtripServer', function(done) {
+  pit('should accept a custom error handler to roundtripServer', function() {
     
     function serverFn(data, cb) {
       var err = new Error('failed');
       err.toJSON = function() { return {test: 'json'}; };
       err.stack = 'test-stack-trace';
-      cb(err);
+      throw err;
     }
 
-    roundtripServer('testing', serverFn);
-    roundtripServer('testing-with-error', serverFn, true);
-    roundtripClient('testing', {name: 'Test User'}, function(err, resp) {
-      expect(err.message).toBe('failed');
-      expect(err.json).toBeUndefined();
+    roundtripServer('testing', serverFn, function(err) {
+      return {message: 'failed'};
     });
-    roundtripClient('testing-with-error', {name: 'Test User'}, function(err, resp) {
-      expect(err.message).toBe('failed');
-      expect(err.json).toBe('{"test":"json"}');
-      expect(err.stack).toBe('test-stack-trace');
-    });
+    roundtripServer('testing-with-error', serverFn);
+    
+    return roundtripClient('testing', {name: 'Test User'})
+      .catch(function(err) {
+        expect(err.message).toBe('failed');
+        expect(err.json).toBeUndefined();
+      })
+      .then(function() {
+        return roundtripClient('testing-with-error', {name: 'Test User'});
+      })
+      .catch(function(err) {
+        expect(err.message).toBe('failed');
+        expect(err.json).toEqual({"test": "json"});
+        expect(err.stack).toBe('test-stack-trace');
+      });
   });
 
-  it('should not crash on throw errors', function () {
+  pit('should not crash on throw errors', function () {
     
     function serverFn(data, cb) {
       throw new Error('failed');
     }
 
     roundtripServer('testing', serverFn);
-    roundtripClient('testing', {name: 'Test User'}, function(err, resp) {
-      expect(err.message).toBe('failed');
-      expect(err.json).toBeUndefined();
-    });
+    
+    return roundtripClient('testing', {name: 'Test User'})
+      .catch(function(err) {
+        expect(err.message).toBe('failed');
+        expect(err.json).toBeNull();
+      });
+
+  });
+
+  pit('should not crash on throw errors', function () {
+    
+    function serverFn(data, cb) {
+      throw new Error('failed');
+    }
+
+    roundtripServer('testing', serverFn);
+    return roundtripClient('testing', {name: 'Test User'})
+      .catch(function(err) {
+        expect(err.message).toBe('failed');
+        expect(err.json).toBeNull();
+      });
 
   });
 
